@@ -186,7 +186,7 @@ def createRandomMetrics(hostId, timestamp, timeUnit, extended=False):
         cpuUser = 10.0 * random.random()
     else:
         cpuUser = 35.0 + 30.0 * random.random()
-
+    # 1
     records.append(createRecord(measureCpuUser, cpuUser, "DOUBLE", timestamp, timeUnit))
 
     otherCpuMeasures = [measureCpuSystem, measureCpuSteal, measureCpuIowait, measureCpuNice, measureCpuHi, measureCpuSi]
@@ -195,9 +195,11 @@ def createRandomMetrics(hostId, timestamp, timeUnit, extended=False):
     for measure in otherCpuMeasures:
         value = random.random()
         totalOtherUsage += value
+        # 2,..7
         records.append(createRecord(measure, value, "DOUBLE", timestamp, timeUnit))
 
     cpuIdle = max([100 - cpuUser - totalOtherUsage, 0])
+    # 8th
     records.append(createRecord(measureCpuIdle, cpuIdle, "DOUBLE", timestamp, timeUnit))
 
     remainingMeasures = [measureMemoryFree, measureMemoryUsed, measureMemoryCached, measureDiskIoReads,
@@ -206,6 +208,7 @@ def createRandomMetrics(hostId, timestamp, timeUnit, extended=False):
 
     for measure in remainingMeasures:
         value = 100.0 * random.random()
+        #9th to 20th 
         records.append(createRecord(measure, value, "DOUBLE", timestamp, timeUnit))
 
     # My extension
@@ -221,12 +224,9 @@ def createRandomMetrics(hostId, timestamp, timeUnit, extended=False):
 
 def createRandomEvent(timestamp, timeUnit):
     records = list()
-
     records.append(createRecord(measureTaskCompleted, random.randint(0, 500), "BIGINT", timestamp, timeUnit))
     records.append(createRecord(measureTaskEndState, np.random.choice(measureValuesForTaskEndState, p=selectionProbabilities), "VARCHAR", timestamp, timeUnit))
-
     remainingMeasures = [measureGcReclaimed, measureGcPause, measureMemoryFree]
-
     for measure in remainingMeasures:
         value = 100.0 * random.random()
         records.append(createRecord(measure, value, "DOUBLE", timestamp, timeUnit))
@@ -274,15 +274,23 @@ class IngestionThread(threading.Thread):
         self.numMetrics = len(dimensionMetrics)
         self.numEvents = len(dimensionEvents)
 
+        assert args.writeMode in ['single', 'batch', 'batchCommon']
+        self.writeMode = args.writeMode
+        self.nSamplesPT = args.nSamplesPT
+        
     def run(self):
         global seriesId
         global timestamp
         global lock
 
-        timings = list()
-        success = 0
+        # Just assume it is 20
+        assert self.nSamplesPT % 20 == 0 
+        
+        timings = list() # Stores elapsed times of individual writeRecords calls.
+        success = 0      # Count writeRecords calls
+        samples_cnt = 0   # Count each metric entries
         idx = 0
-
+        
         while True:
             with lock:
                 if sigInt == True:
@@ -301,18 +309,61 @@ class IngestionThread(threading.Thread):
 
             if localSeriesId < self.numMetrics:
                 commonAttributes = createWriteRecordCommonAttributes(self.dimensionMetrics[localSeriesId])
-                # records = createRandomMetrics(seriesId, localTimestamp, "SECONDS")
-                records = createRandomMetrics(seriesId, localTimestamp, "SECONDS", extended=True)
+                records = createRandomMetrics(seriesId, localTimestamp, "SECONDS")
+                # records = createRandomMetrics(seriesId, localTimestamp, "SECONDS", extended=True)
                 
             else:
                 commonAttributes = createWriteRecordCommonAttributes(self.dimensionEvents[localSeriesId - self.numMetrics])
                 records = createRandomEvent(localTimestamp, "SECONDS")
 
             idx += 1
+
+            # Timer starts from this thread.
             start = timer()
             try:
-                writeResult = writeRecords(self.client, self.databaseName, self.tableName, commonAttributes, records)
-                success += 1
+                if self.writeMode == 'batchCommon':
+                    # Looks like common attributes are always non-NULL.
+                    # print("commonAttributes: ", commonAttributes)
+                    print("len(records) : ", len(records)) # looks like length is always 20.
+                    # print(records)
+                    # import time
+                    # time.sleep(1)
+                    start = timer()                    
+                    writeResult = writeRecords(self.client, self.databaseName, self.tableName, commonAttributes, records)
+                    success += 1
+                    samples_cnt += len(records)
+                    
+                elif self.writeMode == 'batch':
+                    # print("commonAttributes: ", commonAttributes)
+                    print("len(records) : ", len(records)) # looks like length is always 20
+                    # print(records)
+                    # import time
+                              
+                    # Prepare for batch
+                    records_batched = []
+                    for record in records:
+                        record['Dimensions'] = commonAttributes['Dimensions']
+                        # print(record)
+                        records_batched.append(record)
+
+                    # print(records_batched[0])
+                    # print()
+                    # time.sleep(3)
+                    start = timer()
+                    # The batch is written
+                    writeResult = writeRecords(self.client, self.databaseName, self.tableName, {}, records_batched)
+                    success += 1
+                    samples_cnt += len(records)
+                    
+                else: # single
+                    start = timer()
+                    for record in records:
+                        record['Dimensions'] = commonAttributes['Dimensions']
+                        # Each record is written
+                        writeResult = writeRecords(self.client, self.databaseName, self.tableName, {}, [record])
+                        success += 1
+                        samples_cnt += 1
+                        
             except Exception as e:
                 print(e)
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -331,37 +382,51 @@ class IngestionThread(threading.Thread):
                 now = datetime.datetime.now()
                 print("{}. {}. {}. RequestId: {}. Time: {}.".format(self.threadId, idx, now.strftime("%Y-%m-%d %H:%M:%S"), requestId, round(end - start, 3)))
 
+            # print("Current samples_cnt = ", samples_cnt)
+            if samples_cnt >= self.nSamplesPT:
+                self.success = success
+                self.timings = timings
+                self.samples_cnt = samples_cnt
+                return
+        
         self.success = success
         self.timings = timings
-
-
+        self.samples_cnt = samples_cnt
+        return
+    
 #########################################
 ######### Ingest load ###################
 #########################################
-
 def ingestRecords(tsClient, dimensionsMetrics, dimensionsEvents, args):
     numThreads = args.concurrency
 
     ingestionStart = timer()
     timings = list()
     threads = list()
-
+    success = 0
+    samples_cnt = 0
+    
     for threadId in range(numThreads):
         print("Starting ThreadId: {}".format(threadId + 1))
         thread = IngestionThread(tsClient, threadId + 1, args, dimensionsMetrics, dimensionsEvents)
         thread.start()
         threads.append(thread)
 
-    success = 0
     for t in threads:
         t.join()
         success += t.success
         timings.extend(t.timings)
+        samples_cnt += t.samples_cnt
 
-    print("Total={}, Success={}, Avg={}, Stddev={}, 50thPerc={}, 90thPerc={}, 99thPerc={}".format(len(timings), success,
+    # assert len(timings) == success
+    print("Total={}, Success={}, Avg={}, Stddev={}, 50thPerc={}, 90thPerc={}, 99thPerc={}".format(len(timings),
+                                                                                                  success,
                                                                                                   round(np.average(timings), 3),
-                                                                                                  round(np.std(timings), 3), round(np.percentile(timings, 50), 3),
-                                                                                                  round(np.percentile(timings, 90), 3), round(np.percentile(timings, 99), 3)))
+                                                                                                  round(np.std(timings), 3),
+                                                                                                  round(np.percentile(timings, 50), 3),
+                                                                                                  round(np.percentile(timings, 90), 3),
+                                                                                                  round(np.percentile(timings, 99), 3)))
+    print("Samples Cnt={}".format(samples_cnt))
 
     ingestionEnd = timer()
     print("Total time to ingest: {} seconds".format(round(ingestionEnd - ingestionStart, 2)))
@@ -382,42 +447,54 @@ def createWriteClient(region, profile = None):
     else:
         session = boto3.Session()
         client = session.client(service_name = 'timestream-write',
-                                region_name = region, config = config)
+                                region_name = region,
+                                config = config)
     return client
 
 def describeTable(client, databaseName, tableName):
-    response = client.describe_table(DatabaseName = databaseName, TableName = tableName)
+    response = client.describe_table(DatabaseName = databaseName,
+                                     TableName = tableName)
     print("Table Description:")
     pprint.pprint(response['Table'])
 
 def writeRecords(client, databaseName, tableName, commonAttributes, records):
-    return client.write_records(DatabaseName = databaseName, TableName = tableName,
-                                CommonAttributes = (commonAttributes), Records = (records))
+    return client.write_records(DatabaseName = databaseName,
+                                TableName = tableName,
+                                CommonAttributes = (commonAttributes),
+                                Records = (records))
 
 #########################################
 ######### Main ##########
 #########################################
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(prog = 'TimestreamSampleContinuousDataIngestorApplication', description='Execute a example application generating and ingesting time series data.')
-
+    parser = argparse.ArgumentParser(prog = 'TimestreamSampleContinuousDataIngestorApplication',
+                                     description='Execute a example application generating and ingesting time series data.')
     parser.add_argument('--database-name', '-d', dest="databaseName", action = "store", required = False, default="devops",
                         help = "The database name in Amazon Timestream - must be already created.")
     parser.add_argument('--table-name', '-t', dest="tableName", action = "store", required = False, default="host_metrics",
                         help = "The table name in Amazon Timestream - must be already created.")
     parser.add_argument('--endpoint', '-e', action = "store", required = False, default='us-west-2',
                         help="Specify the service region endpoint. E.g. 'us-east-1'")
-    parser.add_argument('--concurrency', '-c', action = "store", type = int, default = 2,
+    parser.add_argument('--concurrency', '-c', action = "store", type = int, default = 1,
                         help = "Number of concurrent ingestion threads (default: 1)")
     parser.add_argument('--host-scale', dest = "hostScale", action = "store", type = int, default = 1,
                         help = "The scale factor that determines the number of hosts emitting events and metrics (default: 1).")
     parser.add_argument('--profile', action = "store", type = str, default= None, help = "The AWS Config profile to use.")
 
+    parser.add_argument('--ingestion-mode', dest = "writeMode", action = "store", required = False, default= "single",
+                        help = "single/batch/batchCommon")
+
+    parser.add_argument("--n_samples_per_thread", '-n', dest = "nSamplesPT", action = "store", required = False, type = int, default=100,
+                        help="Specify the number of metric entries (rows in a table) that one thread ingests. Thus the total number of entries is nSamplePT x concurrency")
+       
     args = parser.parse_args()
     print(args)
 
+    # sys.exit(0)
+    # For this code, we keep this to 1.
     hostScale = args.hostScale       # scale factor for the hosts.
-
+    # writeMode = args.writeMode
     dimensionsMetrics, dimensionsEvents = generateDimensions(hostScale)
 
     print("Dimensions for metrics: {}".format(len(dimensionsMetrics)))
@@ -440,4 +517,5 @@ if __name__ == "__main__":
         sys.exit(0)
 
     ## Run the ingestion load.
+    # args.writeMode should be taking either single, batch or batchCommon
     ingestRecords(tsClient, dimensionsMetrics, dimensionsEvents, args)

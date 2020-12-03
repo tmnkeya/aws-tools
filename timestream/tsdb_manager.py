@@ -18,21 +18,19 @@ MS_INTER_RIGHT  = 3
 
 if __name__ == '__main__':
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-n", "--n_samples", help="This file will be used for ingesting records")
-    args = parser.parse_args()
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument("-n", "--n_samples", help="This file will be used for ingesting records")
+    # args = parser.parse_args()
 
-    if args.n_samples is None:
-        n_samples = 10
-    else:
-        n_samples = int(args.n_samples)
-
+    # if args.n_samples is None:
+    #     n_samples = 10
+    # else:
+    #     n_samples = int(args.n_samples)
     session = boto3.Session()
     write_client = session.client('timestream-write',
                                   config=Config(read_timeout=20,
                                                 max_pool_connections=5000,
                                                 retries={'max_attempts': 10}))
-
     ts_db = DBManager(write_client)
     
     ts_db.delete_table()
