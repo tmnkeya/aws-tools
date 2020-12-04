@@ -99,16 +99,19 @@ measureCpuSystem = 'cpu_system'
 measureCpuIdle = 'cpu_idle'
 measureCpuIowait = 'cpu_iowait'
 measureCpuSteal = 'cpu_steal'
+
 measureCpuNice = 'cpu_nice'
 measureCpuSi = 'cpu_si'
 measureCpuHi = 'cpu_hi'
 measureMemoryFree = 'memory_free'
 measureMemoryUsed = 'memory_used'
+
 measureMemoryCached = 'memory_cached'
 measureDiskIoReads = 'disk_io_reads'
 meausreDiskIoWrites = 'disk_io_writes'
 measureLatencyPerRead = 'latency_per_read'
 measureLatencyPerWrite = 'latency_per_write'
+
 measureNetworkBytesIn = 'network_bytes_in'
 measureNetworkBytesOut = 'network_bytes_out'
 measureDiskUsed = 'disk_used'
@@ -288,6 +291,8 @@ class IngestionThread(threading.Thread):
         
         timings = list() # Stores elapsed times of individual writeRecords calls.
         success = 0      # Count writeRecords calls
+        failure = 0
+        failed_reqIDs = [] 
         samples_cnt = 0   # Count each metric entries
         idx = 0
         
@@ -324,7 +329,7 @@ class IngestionThread(threading.Thread):
                 if self.writeMode == 'batchCommon':
                     # Looks like common attributes are always non-NULL.
                     # print("commonAttributes: ", commonAttributes)
-                    print("len(records) : ", len(records)) # looks like length is always 20.
+                    # print("len(records) : ", len(records)) # looks like length is always 20.
                     # print(records)
                     # import time
                     # time.sleep(1)
@@ -332,10 +337,9 @@ class IngestionThread(threading.Thread):
                     writeResult = writeRecords(self.client, self.databaseName, self.tableName, commonAttributes, records)
                     success += 1
                     samples_cnt += len(records)
-                    
                 elif self.writeMode == 'batch':
                     # print("commonAttributes: ", commonAttributes)
-                    print("len(records) : ", len(records)) # looks like length is always 20
+                    # print("len(records) : ", len(records)) # looks like length is always 20
                     # print(records)
                     # import time
                               
@@ -345,8 +349,8 @@ class IngestionThread(threading.Thread):
                         record['Dimensions'] = commonAttributes['Dimensions']
                         # print(record)
                         records_batched.append(record)
-
-                    # print(records_batched[0])
+                    
+                    # print("len(records_batch) ", len(records_batched))
                     # print()
                     # time.sleep(3)
                     start = timer()
@@ -354,7 +358,6 @@ class IngestionThread(threading.Thread):
                     writeResult = writeRecords(self.client, self.databaseName, self.tableName, {}, records_batched)
                     success += 1
                     samples_cnt += len(records)
-                    
                 else: # single
                     start = timer()
                     for record in records:
@@ -366,12 +369,15 @@ class IngestionThread(threading.Thread):
                         
             except Exception as e:
                 print(e)
+                print("FAILED writeRecords")
+                failure += 1
                 exc_type, exc_value, exc_traceback = sys.exc_info()
                 traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
                 requestId = "RequestId: {}".format(e.response['ResponseMetadata']['RequestId'])
                 print(requestId)
-                print(json.dumps(commonAttributes, indent=2))
-                print(json.dumps(records, indent=2))
+                # print(json.dumps(commonAttributes, indent=2))
+                # print(json.dumps(records, indent=2))
+                failed_reqIDs.append(requestId)
                 continue
             finally:
                 end = timer()
@@ -383,15 +389,19 @@ class IngestionThread(threading.Thread):
                 print("{}. {}. {}. RequestId: {}. Time: {}.".format(self.threadId, idx, now.strftime("%Y-%m-%d %H:%M:%S"), requestId, round(end - start, 3)))
 
             # print("Current samples_cnt = ", samples_cnt)
-            if samples_cnt >= self.nSamplesPT:
+            if samples_cnt == self.nSamplesPT:
                 self.success = success
+                self.failure = failure
                 self.timings = timings
                 self.samples_cnt = samples_cnt
+                self.failed_reqIDs = failed_reqIDs
                 return
-        
+
         self.success = success
+        self.failure = failure
         self.timings = timings
         self.samples_cnt = samples_cnt
+        self.failed_reqIDs = failed_reqIDs
         return
     
 #########################################
@@ -405,7 +415,8 @@ def ingestRecords(tsClient, dimensionsMetrics, dimensionsEvents, args):
     threads = list()
     success = 0
     samples_cnt = 0
-    
+    failure = 0
+    failed_reqIDs = []
     for threadId in range(numThreads):
         print("Starting ThreadId: {}".format(threadId + 1))
         thread = IngestionThread(tsClient, threadId + 1, args, dimensionsMetrics, dimensionsEvents)
@@ -415,19 +426,30 @@ def ingestRecords(tsClient, dimensionsMetrics, dimensionsEvents, args):
     for t in threads:
         t.join()
         success += t.success
+        failure += t.failure
         timings.extend(t.timings)
         samples_cnt += t.samples_cnt
-
+        failed_reqIDs.extend(t.failed_reqIDs)
+        
     # assert len(timings) == success
-    print("Total={}, Success={}, Avg={}, Stddev={}, 50thPerc={}, 90thPerc={}, 99thPerc={}".format(len(timings),
-                                                                                                  success,
-                                                                                                  round(np.average(timings), 3),
-                                                                                                  round(np.std(timings), 3),
-                                                                                                  round(np.percentile(timings, 50), 3),
-                                                                                                  round(np.percentile(timings, 90), 3),
-                                                                                                  round(np.percentile(timings, 99), 3)))
+    # print("Total={}, Success={}, Failure={}, Avg={}, Stddev={}, 50thPerc={}, 90thPerc={}, 99thPerc={}".format(len(timings),
+    #                                                                                                           success,
+    #                                                                                                           failure,
+    #                                                                                                           round(np.average(timings), 3),
+    #                                                                                                           round(np.std(timings), 3),
+    #                                                                                                           round(np.percentile(timings, 50), 3),
+    #                                                                                                           round(np.percentile(timings, 90), 3),
+    #                                                                                                           round(np.percentile(timings, 99), 3)))
+    # print("Total={}, Success={}, Failure={}, Avg={}, Stddev={}, 50thPerc={}, 90thPerc={}, 99thPerc={}".format(len(timings),
+    #                                                                                                           success,
+    #                                                                                                           failure,
+    #                                                                                                           round(np.average(timings), 3),
+    #                                                                                                           round(np.std(timings), 3),
+    #                                                                                                           round(np.percentile(timings, 50), 3),
+    #                                                                                                           round(np.percentile(timings, 90), 3),
+    #                                                                                                           round(np.percentile(timings, 99), 3)))
     print("Samples Cnt={}".format(samples_cnt))
-
+    print("len(failed_reqIDs) = ", len(failed_reqIDs))
     ingestionEnd = timer()
     print("Total time to ingest: {} seconds".format(round(ingestionEnd - ingestionStart, 2)))
 
@@ -443,7 +465,8 @@ def createWriteClient(region, profile = None):
     if profile != None:
         session = boto3.Session(profile_name = profile)
         client = session.client(service_name = 'timestream-write',
-                                region_name = region, config = config)
+                                region_name = region,
+                                config = config)
     else:
         session = boto3.Session()
         client = session.client(service_name = 'timestream-write',

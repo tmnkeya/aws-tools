@@ -1,0 +1,10 @@
+(py38) [ec2-user@ip-10-0-0-216 single]$ ./run.sh
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.15984004299389198
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.11856742700911127
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 0.6684266399824992
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 0.6520257679803763
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 6.25323716798448
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 5.638474653009325
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 62.17198761398322
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 57.549518352985615
+

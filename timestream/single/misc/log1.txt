@@ -1,0 +1,71 @@
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.21750714699737728
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.24135651098913513
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 0.771905056986725
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 0.7571461189945694
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 6.390856122015975
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 6.085383539990289
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 61.352176072017755
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 60.7777694670076
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.47740653800428845
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 100, success_records_cnt = 100, elapsed_time_sec = 0.4969885210157372
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 3.5624216919823084
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 1000, success_records_cnt = 1000, elapsed_time_sec = 3.798394575016573
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 35.58429323401651
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 10000, success_records_cnt = 10000, elapsed_time_sec = 35.33466507701087
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 355.5599188999913
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 100000, success_records_cnt = 100000, elapsed_time_sec = 355.9440300720162
+   is_common_attributes batch_size total_records_cnt success_records_cnt  elapsed_time_sec
+0                 False        100               100                 100          0.217507
+1                  True        100               100                 100          0.241357
+2                 False        100              1000                1000          0.771905
+3                  True        100              1000                1000          0.757146
+4                 False        100             10000               10000          6.390856
+5                  True        100             10000               10000          6.085384
+6                 False        100            100000              100000         61.352176
+7                  True        100            100000              100000         60.777769
+8                 False         10               100                 100          0.477407
+9                  True         10               100                 100          0.496989
+10                False         10              1000                1000          3.562422
+11                 True         10              1000                1000          3.798395
+12                False         10             10000               10000         35.584293
+13                 True         10             10000               10000         35.334665
+14                False         10            100000              100000        355.559919
+15                 True         10            100000              100000        355.944030
+
+
+
+(py38) [ec2-user@ip-10-0-0-216 single]$ ./run.sh
+ENDED: isCA = False, batch_size = 1, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.5119050249923021
+ENDED: isCA = True, batch_size = 1, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.4598021050042007
+ENDED: isCA = False, batch_size = 1, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 3.6188010339974426
+ENDED: isCA = True, batch_size = 1, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 3.585665064980276
+ENDED: isCA = False, batch_size = 1, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 36.46718453199719
+ENDED: isCA = True, batch_size = 1, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 35.87270375399385
+ENDED: isCA = False, batch_size = 1, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 358.4015519520035
+ENDED: isCA = True, batch_size = 1, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 356.7132599570032
+ENDED: isCA = False, batch_size = 5, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.18908605698379688
+ENDED: isCA = True, batch_size = 5, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.15080113400472328
+ENDED: isCA = False, batch_size = 5, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.8756958729936741
+ENDED: isCA = True, batch_size = 5, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.8540547719749156
+ENDED: isCA = False, batch_size = 5, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 7.478639303997625
+ENDED: isCA = True, batch_size = 5, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 7.354848888004199
+ENDED: isCA = False, batch_size = 5, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 74.69838128398987
+ENDED: isCA = True, batch_size = 5, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 74.34711334400345
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.17447419097879902
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 10, success_records_cnt = 10, elased_time_sec = 0.12408905700431205
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.4676854439894669
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.4899002849997487
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 4.006263104005484
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 3.8780936319963075
+ENDED: isCA = False, batch_size = 10, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 38.948484499996994
+ENDED: isCA = True, batch_size = 10, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 38.181939322006656
+
+
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.1994847989990376
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100, success_records_cnt = 100, elased_time_sec = 0.1284632119932212
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 0.7095426009909716
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 1000, success_records_cnt = 1000, elased_time_sec = 0.6355765769840218
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 6.4702671020058915
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 10000, success_records_cnt = 10000, elased_time_sec = 6.053666247986257
+ENDED: isCA = False, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elased_time_sec = 64.14300578899565
+ENDED: isCA = True, batch_size = 100, total_records_cnt = 100000, success_records_cnt = 100000, elased_time_sec = 59.76306450998527
