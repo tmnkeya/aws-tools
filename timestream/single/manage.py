@@ -253,3 +253,7 @@ if __name__ == '__main__':
 
     # ts_db.delete_table()
     # ts_db.delete_database()
+
+    import time
+    time.sleep(10)
+    

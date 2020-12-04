@@ -52,18 +52,31 @@ def write_records(records, isCA=False):
         status = result['ResponseMetadata']['HTTPStatusCode']
         # print("Processed %d records. WriteRecords Status: %s" %
         #       (len(records), status))
-        
+
     except write_client.exceptions.RejectedRecordsException as err:
-        print("RejectedRecords: ", err)
-        for rr in err.response["RejectedRecords"]:
-            print("Rejected Index " + str(rr["RecordIndex"]) + ": " + rr["Reason"])
-            print("Other records were written successfully. ")
+        # print("Got a Rejected Records Exception")
+        # print("RejectedRecords: ", err)
+        print(err.response)
+        # print(err.response["Error"])
+        
+        # for rr in err.response["RejectedRecords"]:
+        #     print("Rejected Index " + str(rr["RecordIndex"]) + ": " + rr["Reason"])
+        #     print("Some other records were written successfully. Causion. Unreliable")
+        return -1
+
+    except write_client.exceptions.ValidationException as err:
+        print("Got a ValidationException")
+        print(err.response['ResponseMetadata'])
+        for rr in err.response['ResponseMetadata']:
+            print(rr)
+        return -1
     
     except Exception as err:
-        # print("Error:", err)
-        print(err.response)
-        #print(err.response["Error"])
-
+        print("Error:", err)
+        # print(err.response)
+        # print(err.response["Error"])
+        return -1
+        
 if __name__ == '__main__':
 
     is_print = False

@@ -54,11 +54,14 @@ def write_records(records, isCA=False):
         #       (len(records), status))
         
     except write_client.exceptions.RejectedRecordsException as err:
-        print("Got a Rejected Records Exception")
-        print("RejectedRecords: ", err)
-        for rr in err.response["RejectedRecords"]:
-            print("Rejected Index " + str(rr["RecordIndex"]) + ": " + rr["Reason"])
-            print("Some other records were written successfully. Causion. Unreliable")
+        # print("Got a Rejected Records Exception")
+        # print("RejectedRecords: ", err)
+        print(err.response)
+        # print(err.response["Error"])
+        
+        # for rr in err.response["RejectedRecords"]:
+        #     print("Rejected Index " + str(rr["RecordIndex"]) + ": " + rr["Reason"])
+        #     print("Some other records were written successfully. Causion. Unreliable")
         return -1
 
     except write_client.exceptions.ValidationException as err:
