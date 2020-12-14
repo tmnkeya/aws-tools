@@ -322,6 +322,7 @@ def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupByMeasureNa
     
     # batchSize, groupByMeasureName
     if groupByMeasureName == False:
+        random.shuffle(records)
         return records[0:batchSize] # no bother shuffle
     else:
         combined_list = [recordsCpuUser, recordsCpuSystem, recordsCpuSteal, recordsCpuIdle, recordsCpuIowait, 
@@ -466,13 +467,13 @@ class IngestionThread(threading.Thread):
                 writeResult = writeRecords(self.client, self.databaseName, self.tableName, commonAttributes, records)
                 success += 1
             except Exception as e:
-                # print(e)
-                exc_type, exc_value, exc_traceback = sys.exc_info()
-                traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
-                requestId = "RequestId: {}".format(e.response['ResponseMetadata']['RequestId'])
-                print(requestId)
-                print(json.dumps(commonAttributes, indent=2))
-                print(json.dumps(records, indent=2))
+                print(e.response)
+                # exc_type, exc_value, exc_traceback = sys.exc_info()
+                # traceback.print_exception(exc_type, exc_value, exc_traceback, limit=2, file=sys.stdout)
+                # requestId = "RequestId: {}".format(e.response['ResponseMetadata']['RequestId'])
+                # print(requestId)
+                # print(json.dumps(commonAttributes, indent=2))
+                # print(json.dumps(records, indent=2))
                 continue
             finally:
                 end = timer()
