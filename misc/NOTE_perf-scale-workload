@@ -1,0 +1,71 @@
+
+# https://github.com/awslabs/amazon-timestream-tools/tree/master/tools/perf-scale-workload
+
+
+# The other parameter that controls the ingestion volume is the interval at which metrics and events are emitted. The argument --interval-millis contr\
+ols this interval. --interval-millis 60000 implies that each host emits its set of metrics and events once every 60 seconds on average.
+
+python3 devops_ingestion_driver.py -d perf_scale -t test -e us-west-2 -c 30 -p 20 --host-scale 100 --interval-millis 60000
+
+Starting ThreadId: 18-30
+Using credentials from the environment
+Connecting to timestream ingest in region:  us-west-2
+Starting ThreadId: 20-30
+Using credentials from the environment
+Connecting to timestream ingest in region:  us-west-2
+Starting ThreadId: 19-30
+Using credentials from the environment
+Connecting to timestream ingest in region:  us-west-2
+Thread 20-3 sleeping for 55 secs
+
+Thread 14-19 sleeping for 22 secs
+Thread 11-14 sleeping for 19 secs
+Thread 5-1 sleeping for 2 secs
+Resetting to first series from thread: [14-19] at time 2020-12-13 09:48:41. Timestamp set to: 1607852922433.
+Resetting to first series from thread: [5-1] at time 2020-12-13 09:48:41. Timestamp set to: 1607852921732.
+Resetting to first series from thread: [11-14] at time 2020-12-13 09:48:42. Timestamp set to: 1607852922295.
+Resetting to first series from thread: [20-3] at time 2020-12-13 09:48:42. Timestamp set to: 1607852923362.
+Can't keep up ingestion to the desired inter-event interval. Expected interval: 60000 ms. Actual: 67876 ms. Consider increasing concurrency or process\
+es.
+Resetting to first series from thread: [2-28] at time 2020-12-13 09:48:49. Timestamp set to: 1607852929439.                                           \
+
+Can't keep up ingestion to the desired inter-event interval. Expected interval: 60000 ms. Actual: 69310 ms. Consider increasing concurrency or process\
+es.
+Resetting to first series from thread: [9-14] at time 2020-12-13 09:48:51. Timestamp set to: 1607852931331.
+
+<-- This indicates the server side is slow, so that
+
+python3 devops_ingestion_driver.py -d perf_scale -t test -e us-west-2 -c 30 -p 20 --host-scale 100 --interval-millis 80000
+
+Starting ThreadId: 20-30
+Using credentials from the environment
+Connecting to timestream ingest in region:  us-west-2
+Thread 5-25 sleeping for 63 secs
+Thread 18-17 sleeping for 63 secs
+Thread 4-4 sleeping for 61 secs
+Thread 2-14 sleeping for 61 secs
+Thread 13-24 sleeping for 60 secs
+Thread 15-14 sleeping for 60 secs
+Thread 12-1 sleeping for 58 secs
+
+
+This script creates the database and table if they don't exist, and spawn a configurable number of processes and configurable number of threads per process which ingest data into Timestream. The effe\
+ctive concurrency is the product of the number of processes and the number of threads.
+
+This command will launch 50 processes, which in turn will launch 50 threads to generate the ingestion load.
+  --host-scale HOSTSCALE
+                        The scale factor that determines the number of hosts emitting events and metrics. (default: 100)
+
+1000 x 100
+
+100000
+
+120000
+
+DimensionsMetric(region='us-east-1', cell='us-east-1-cell-1', silo='us-east-1-cell-1-silo-1', availability_zone='us-east-1-1', microservice_name='apollo', instance_type='r5.4xlarge', os_version='AL2'\
+, instance_name='i-zaZswmJk-apollo-us-east-1-cell-1-silo-1-00000000.amazonaws.com')
+
+DimensionsEvent(region='us-east-1', cell='us-east-1-cell-1', silo='us-east-1-cell-1-silo-1', availability_zone='us-east-1-1', microservice_name='apollo', instance_name='i-zaZswmJk-apollo-us-east-1-ce\
+ll-1-silo-1-00000000.amazonaws.com', process_name='server', jdk_version='JDK_11')
+
+

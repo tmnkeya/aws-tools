@@ -8,13 +8,10 @@ import random
 from CrudAndSimpleIngestionExample import CrudAndSimpleIngestionExample as DBManager
 from botocore.config import Config
 
-DATABASE_NAME = "devops"
-TABLE_NAME = "host_metrics"
-HT_TTL_HOURS = 12
-CT_TTL_DAYS = 90
-
-MS_INTER_LEFT = 1
-MS_INTER_RIGHT  = 3
+# DATABASE_NAME = "devops"
+# TABLE_NAME = "host_metrics"
+# HT_TTL_HOURS = 12
+# CT_TTL_DAYS = 90
 
 if __name__ == '__main__':
 

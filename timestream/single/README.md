@@ -1,4 +1,6 @@
-Overview
+# Single ingestion process (thread)
+
+## Overview
 
 * Code demonstrates three basic ingestion scenarios of recording batching.
 * Batching of records count 1 to 100. Batch-size 1 is an single record ingestion scenarios.
@@ -6,13 +8,13 @@ Overview
 * Code also demonstrates simple reponse time measurements for ingestion operations.
 * Code also demonstrates exception cathing. One is RejectedRecordsException and another is ValidationException.
 
-Setup
+## Setup
 * Prerequisite
   At your python 3.x environment. Have EC2 (oregon) assigned a role for creating, deleting TimeStream databases and tables.
 * pipreqs .
 * pip install -r requirements
 
-Demo
+##Demo
 * config.json
   Configure your parameters.
 
@@ -40,13 +42,13 @@ Demo
   Ex. pythion ingestion_rejected_records_exception.py -b 101 -n 101
       This generates ValidationException, as it aggregates 101 records and try to call a write_records(). 
 
-
-
-Ref:
-
-
+##Ref:
 * https://docs.aws.amazon.com/timestream/latest/developerguide/ts-limits.html
 * https://docs.aws.amazon.com/timestream/latest/developerguide/APITimestreamSpecificErrors.html
+
+# Note that this code originally derived from this blog.
 * https://aws.amazon.com/blogs/aws/store-and-access-time-series-data-at-any-scale-with-amazon-timestream-now-generally-available/
+
+  Added database management element (manage.py).
 
 

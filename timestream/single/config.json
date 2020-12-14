@@ -1,9 +1,0 @@
-{
-    "database_name": "TestDB",
-    "table_name" : "BatchTbl",
-    "ht_ttl_hours" : 8000,
-    "ct_ttl_days" : 10000,
-    "country": "US",
-    "city": "San Fransisco",
-    "host_name" : "kittyserver01"
-}

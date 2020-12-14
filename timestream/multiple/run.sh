@@ -1,4 +1,4 @@
-NUM_SAMPLES=1000
+NUM_SAMPLES=10000
 CONC=16
 
 run_bc()
@@ -52,8 +52,7 @@ run_loop()
 }
 
 
-# run_bc
+run_bc
 # run_b
 # run_s
-
-run_loop;
+# run_loop;

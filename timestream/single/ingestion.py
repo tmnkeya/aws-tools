@@ -87,13 +87,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', '-b',
                         type = int,
                         default = 10,
-                        help = "the number of records in a batch (default: 10)")
-    
+                        help = "the number of records in a batch (default: 10)")    
     parser.add_argument('--common-attributes', '-c',
                         type = eval,
                         choices = [True, False],
                         default = False,
-                        help = "True or False for use of common attributes in write_records record bathing")
+                        help = "True or False for use of common attributes in write_records record batching")
     parser.add_argument('--total-records-cnt', '-n',
                         type = int,
                         default = 100,
