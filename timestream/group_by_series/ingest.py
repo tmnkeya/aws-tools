@@ -225,7 +225,7 @@ def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupBySeries):
         totalOtherUsage += value
         record = createRecord(measureCpuSteal, value, "DOUBLE", timestamp, timeUnit)
         records.append(record)
-        recordsCpuIdle.append(record)
+        recordsCpuSteal.append(record)
         
         value = random.random()
         totalOtherUsage += value
@@ -458,7 +458,7 @@ class IngestionThread(threading.Thread):
                 else:
                     commonAttributes = createWriteRecordCommonAttributes(self.dimensionEvents[localSeriesId - self.numMetrics])
                     records = createRandomEvent(localTimestamp, "SECONDS", self.batchSize, self.groupByMeasureName)
-                if len(records) >0:
+                if len(records) == self.batchSize:
                     break
 
             idx += 1

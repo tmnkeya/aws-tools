@@ -1,0 +1,12 @@
+-- select * from (select availability_zone, microservice_name, instance_name, os_version, cell, region, silo, instance_type, measure_name, count(*) as count
+-- FROM "TestDB1"."BatchTbl1" 
+-- group by availability_zone, microservice_name, instance_name, os_version, cell, region, silo, instance_type, measure_name) where count % 100 != 0
+
+select availability_zone, microservice_name, instance_name, os_version, cell, region, silo, instance_type, measure_name, count(*) as count
+FROM "TestDB1"."BatchTbl1" 
+group by availability_zone, microservice_name, instance_name, os_version, cell, region, silo, instance_type, measure_name
+-- 
+--
+
+
+
