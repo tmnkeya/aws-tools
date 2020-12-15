@@ -8,11 +8,13 @@
 # sudo kill -SIGINT $MY_PID
 # sleep 5
 
-python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 100 & 
-MY_PID=$!
-sleep 60
-sudo kill -SIGINT $MY_PID
-sleep 5
+# python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 100 & 
+# MY_PID=$!
+# sleep 30
+# sudo kill -SIGINT $MY_PID
+# sleep 5
+
+# exit
 
 # python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 101 & 
 # MY_PID=$!
@@ -29,16 +31,16 @@ sleep 5
 # sudo kill -SIGINT $MY_PID
 # sleep 5
 
-# python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 100 -g True & 
-# MY_PID=$!
-# sleep 60
-# sudo kill -SIGINT $MY_PID
-# sleep 5
-
-python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 101 -g True & 
+python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 100 -g True & 
 MY_PID=$!
-sleep 3
+sleep 30
 sudo kill -SIGINT $MY_PID
-sleep 3
+sleep 5
+
+# python ingest.py --database-name TestDB1 --table-name BatchTbl1 --endpoint us-west-2 -c 1 -b 101 -g True & 
+# MY_PID=$!
+# sleep 3
+# sudo kill -SIGINT $MY_PID
+# sleep 3
 
 
