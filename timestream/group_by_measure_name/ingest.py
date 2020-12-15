@@ -173,8 +173,8 @@ def generateDimensions(scaleFactor):
 def createWriteRecordCommonAttributes(dimensions):
     return { "Dimensions": [{ "Name": dimName, "Value": getattr(dimensions, dimName), "DimensionValueType": "VARCHAR"} for dimName in dimensions._fields] }
 
-# Added batchSize and groupByMeasureName
-def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupByMeasureName):
+# Added batchSize and groupBySeries
+def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupBySeries):
 
     records = list()
     # per measure_name (20)
@@ -320,8 +320,8 @@ def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupByMeasureNa
 
         timestamp += 1 # increment
     
-    # batchSize, groupByMeasureName
-    if groupByMeasureName == False:
+    # batchSize, groupBySeries
+    if groupBySeries == False:
         random.shuffle(records)
         return records[0:batchSize] # no bother shuffle
     else:
@@ -334,8 +334,8 @@ def createRandomMetrics(hostId, timestamp, timeUnit, batchSize, groupByMeasureNa
         # time.sleep(5)
         return combined_list[random.randrange(20)][0:batchSize]
 
-# Added batchSize and groupByMeasureName
-def createRandomEvent(timestamp, timeUnit, batchSize, groupByMeasureName):
+# Added batchSize and groupBySeries
+def createRandomEvent(timestamp, timeUnit, batchSize, groupBySeries):
     records = list()
     recordsTaskCompleted = list()
     recordsTaskEndState = list()
@@ -370,7 +370,7 @@ def createRandomEvent(timestamp, timeUnit, batchSize, groupByMeasureName):
 
         timestamp += 1 # increment
     #
-    if groupByMeasureName == False:
+    if groupBySeries == False:
         return records[0:batchSize]
     else:
         combined_list = [recordsTaskCompleted, recordsTaskEndState, recordsGcReclaimed, recordsGcPause, recordsMemoryFree]
@@ -421,7 +421,7 @@ class IngestionThread(threading.Thread):
 
         # Take batch size and group by measure name flag.
         self.batchSize = args.batch_size
-        self.groupByMeasureName = args.group_by_measure_name
+        self.groupByMeasureName = args.group_by_series
         assert isinstance(self.batchSize, int) and self.batchSize > 0 and self.batchSize <= 101
         assert isinstance(self.groupByMeasureName, bool)
 
@@ -575,11 +575,11 @@ if __name__ == "__main__":
                         Just for exercises, set 101 as the upper limit of this command line option. If set 102 or higher, 
                         the simple sanity check fails (in class IngestionThread), rather than actual ingestion after record batching""")
     
-    parser.add_argument('--group-by-measure-name', '-g',
+    parser.add_argument('--group-by-series', '-g',
                         type = eval,
                         choices = [True, False],
                         default = False,
-                        help = "True or False for grouping the same measure name into a batch in write_records for record batching")
+                        help = "True or False for grouping records for the same series into a batch in write_records for record batching")
     
     args = parser.parse_args()
     print(args)
